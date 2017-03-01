@@ -1,0 +1,85 @@
+% Relations in extension
+
+\NeedsTeXFormat{LaTeX2e}
+
+\RequirePackage{expl3}
+\RequirePackage{array}
+\RequirePackage{booktabs}
+
+\ExplSyntaxOn
+
+\keys_define:nn { extrelation } {
+  toprule .bool_set:N = \l_exr_toprule_bool,
+  bottomrule .bool_set:N = \l_exr_bottomrule_bool,
+  leftrule .bool_set:N = \l_exr_leftrule_bool,
+  pars .bool_set:N = \l_exr_pars_bool,
+  relfun .code:n = {\def\relfun{#1}},
+  keyfun .code:n = {\def\keyfun{#1}},
+  nkeyfun .code:n = {\def\nkeyfun{#1}},
+  confun .code:n = {\def\confun{#1}} % TODO
+}
+
+\keys_set:nn { extrelation } {
+  relfun={\textsc{\v}},
+  keyfun={\underline{\mathbf{\v}}},
+  nkeyfun={\mathbf{\v}}, 
+  confun={\mathsf{\v}}
+}
+
+\bool_new:N \l_exr_skip_bool
+
+\NewDocumentEnvironment{extrelationenv} { O{} m m m } {
+  \keys_set:nn { extrelation } { #1 }
+  \bool_set:Nn \l_exr_skip_bool { \l_exr_pars_bool || ! \str_if_eq_p:nn {} {#2}}
+  % Array preamble
+  \array{
+    *{\bool_if:NTF \l_exr_skip_bool {1} {0}}{l}
+    *{\bool_if:NTF \l_exr_leftrule_bool {1} {0}} {|}
+    *{\clist_count:n {#3}}{l}
+    *{\clist_count:n {#4}}{l}
+    *{\bool_if:NTF \l_exr_pars_bool {1} {0}}{l}
+  }
+  % Top rule
+  \bool_if:NTF \l_exr_toprule_bool {\toprule} {}
+  % Relation name
+  \str_if_eq:nnTF {#2} {} {} { \def\v{#2} \relfun }
+  % Left parenthesis
+  \bool_if:NTF \l_exr_pars_bool {(\!\!\!\!} {}
+  % Skip column if relation name or parentheses
+  \bool_if:NTF \l_exr_skip_bool { & } {}
+  % Attributes
+  \lip[sep={&}] |\keyfun| {#3}
+  \clist_if_empty:nTF {#3} {} {\clist_if_empty:nTF {#4} {} { & }}
+  \lip[sep={&}] |\nkeyfun| {#4}
+  % Right parenthesis
+  \bool_if:NTF \l_exr_pars_bool {& \!\!\!\!)} {}
+  \\
+  % Mid rule
+  \bool_if:NTF \l_exr_skip_bool
+%    { \cmidrule{2-\int_eval:n {1 + \clist_count:n {#3} + \clist_count:n {#4}}} }
+%    { \cmidrule{1-\int_eval:n {\clist_count:n {#3} + \clist_count:n {#4}}} }
+    { \cline{2-\int_eval:n {1 + \clist_count:n {#3} + \clist_count:n {#4}}} }
+    { \cline{1-\int_eval:n {\clist_count:n {#3} + \clist_count:n {#4}}} }
+  \rule{0pt}{\normalbaselineskip}
+} {
+  % Bottom rule
+  \bool_if:NTF \l_exr_bottomrule_bool {\\ \bottomrule} {}
+  \endarray
+}
+
+\NewDocumentCommand \extrelationrow { O{} m } {
+  \keys_set:nn { extrelation } { #1 }
+  % Skip column if relation name or parentheses
+  \bool_if:NTF \l_exr_skip_bool { & } {}
+  \lip[sep={&}] |\confun| {#2}
+}
+
+\NewDocumentCommand \extrelation { O{} m m m m } {
+  \[\begin{extrelationenv}[#1]{#2}{#3}{#4}
+    \seq_set_split:Nnn \l_exr_rows_seq {;} {#5}
+    \seq_set_map:NNn \l_exr_rows_seq \l_exr_rows_seq {\exp_not:n {\extrelationrow[#1]{##1}}}
+    \seq_use:Nn \l_exr_rows_seq { \\ }
+  \end{extrelationenv}\]
+}
+
+\ExplSyntaxOff
