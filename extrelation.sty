@@ -2,7 +2,7 @@
 
 \NeedsTeXFormat{LaTeX2e}
 
-\RequirePackage{expl3}
+\RequirePackage{xparse}
 \RequirePackage{array}
 \RequirePackage{booktabs}
 
@@ -48,16 +48,15 @@
   % Skip column if relation name or parentheses
   \bool_if:NTF \l_exr_skip_bool { & } {}
   % Attributes
-  \lip[sep={&}] |\keyfun| {#3}
-  \clist_if_empty:nTF {#3} {} {\clist_if_empty:nTF {#4} {} { & }}
-  \lip[sep={&}] |\nkeyfun| {#4}
+  \clist_set:Nn \l_exr_header_clist {}
+  \clist_map_inline:nn {#3} {\clist_put_right:Nn \l_exr_header_clist {\def\v{##1} \keyfun}}
+  \clist_map_inline:nn {#4} {\clist_put_right:Nn \l_exr_header_clist {\def\v{##1} \nkeyfun}}
+  \clist_use:Nn \l_exr_header_clist {&}
   % Right parenthesis
   \bool_if:NTF \l_exr_pars_bool {& \!\!\!\!)} {}
   \\
   % Mid rule
   \bool_if:NTF \l_exr_skip_bool
-%    { \cmidrule{2-\int_eval:n {1 + \clist_count:n {#3} + \clist_count:n {#4}}} }
-%    { \cmidrule{1-\int_eval:n {\clist_count:n {#3} + \clist_count:n {#4}}} }
     { \cline{2-\int_eval:n {1 + \clist_count:n {#3} + \clist_count:n {#4}}} }
     { \cline{1-\int_eval:n {\clist_count:n {#3} + \clist_count:n {#4}}} }
   \rule{0pt}{\normalbaselineskip}
@@ -71,7 +70,9 @@
   \keys_set:nn { extrelation } { #1 }
   % Skip column if relation name or parentheses
   \bool_if:NTF \l_exr_skip_bool { & } {}
-  \lip[sep={&}] |\confun| {#2}
+  \clist_set:Nn \l_exr_row_clist {}
+  \clist_map_inline:nn {#2} {\clist_put_right:Nn \l_exr_row_clist {\def\v{##1} \confun}}
+  \clist_use:Nn \l_exr_row_clist {&}
 }
 
 \NewDocumentCommand \extrelation { O{} m m m m } {
