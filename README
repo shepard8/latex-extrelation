@@ -1,0 +1,20 @@
+This is the README file for the extrelation package.
+Author: Fabian Pijcke
+E-mail: fabian@pijcke.net
+Comments and suggestions are welcome.
+Date: March 2017
+Version: 0.1
+
+Extrelation supports research in the field of relational databases by providing
+simple commands and environments to produce relations given by extension.
+
+Features include customization of elements composing the relation, vertical and
+horizontal partitioning, and some stylistic modifiers.
+
+The files in this distribution are:
+
+extrelation.sty     - implementation
+extrelation.tex     - documentation sources
+extrelation.pdf     - documentation
+
+Licensing of this package is covered by LPPL.
